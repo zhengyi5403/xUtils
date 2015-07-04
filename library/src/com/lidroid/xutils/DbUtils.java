@@ -228,7 +228,25 @@ public class DbUtils {
 
             createTableIfNotExist(entities.get(0).getClass());
             for (Object entity : entities) {
+                Object idValue = null;
+            	for(Field f: entity.getClass().getDeclaredFields()){
+            		
+					if(f.isAnnotationPresent(com.lidroid.xutils.db.annotation.Id.class))
+						try {
+							f.setAccessible(true);  
+							idValue=f.get(entity);
+							break;
+						} catch (IllegalArgumentException e) {
+							e.printStackTrace();
+						} catch (IllegalAccessException e) {
+							e.printStackTrace();
+						}
+            	};
+            	Object list=findById(entity.getClass(), idValue);
+            	if(list==null)
                 execNonQuery(SqlInfoBuilder.buildInsertSqlInfo(this, entity));
+            	else
+            	update(entity);
             }
 
             setTransactionSuccessful();
